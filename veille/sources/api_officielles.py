@@ -83,4 +83,14 @@ def adzuna(ctx) -> list:
 
 
 def collecter(ctx) -> list:
-    return france_travail(ctx) + adzuna(ctx)
+    """Chaque API est indépendante : une clé refusée ou une API retirée n'empêche pas l'autre."""
+    out, erreurs = [], []
+    for nom, f in (("France Travail", france_travail), ("Adzuna", adzuna)):
+        try:
+            out += f(ctx)
+        except Exception as e:
+            erreurs.append(f"{nom} : {type(e).__name__}: {str(e)[:100]}")
+    if erreurs and not out:
+        raise RuntimeError(" | ".join(erreurs))
+    ctx.budget.setdefault("notes_sources", []).extend(erreurs)
+    return out

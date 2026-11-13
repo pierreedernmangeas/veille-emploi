@@ -76,3 +76,13 @@ def test_vie_mon_vie_et_contrat(monkeypatch):
     m = types.SimpleNamespace(rc=rc)
     offres = V.collecter(_ctx(moteur=m))
     assert offres[0].source == "Mon V.I.E" and offres[0].contrat_brut == "V.I.E"
+
+
+def test_france_travail_en_panne_n_empeche_pas_adzuna(monkeypatch):
+    def boum(ctx):
+        raise RuntimeError("invalid_scope")
+    monkeypatch.setattr(AO, "france_travail", boum)
+    monkeypatch.setattr(AO, "adzuna", lambda ctx: ["offre adzuna"])
+    ctx = _ctx()
+    assert AO.collecter(ctx) == ["offre adzuna"]
+    assert any("France Travail" in n for n in ctx.budget.get("notes_sources", []))
