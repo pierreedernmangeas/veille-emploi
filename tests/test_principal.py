@@ -193,3 +193,19 @@ def test_aucun_fait_du_cv_dans_le_depot():
     trouves = {f: m for f in fichiers if not f.startswith("docs/superpowers/")
                for m in mots if m and m in open(f"{RACINE}/{f}", encoding="utf8", errors="ignore").read()}
     assert trouves == {}
+
+
+def test_secret_mal_colle_nomme_sans_contenu(monkeypatch, capsys):
+    monkeypatch.setenv("VEILLE_IDS", "{“compte”: “moi@exemple.fr”}")         # guillemets typographiques (copier-coller)
+    monkeypatch.setenv("GOOGLE_TOKEN", '{"client_id": "x"}')
+    assert PR.main(["--moment", "matin", "--forcer"]) == 1
+    out = capsys.readouterr().out
+    assert "VEILLE_IDS" in out and "moi@exemple" not in out and "guillemets" in out
+
+
+def test_jeton_google_incomplet_nomme(monkeypatch, capsys):
+    monkeypatch.setenv("VEILLE_IDS", '{"compte": "moi@exemple.fr"}')
+    monkeypatch.setenv("GOOGLE_TOKEN", '{"client_id": "x", "client_secret": "y"}')
+    assert PR.main(["--moment", "matin", "--forcer"]) == 1
+    out = capsys.readouterr().out
+    assert "GOOGLE_TOKEN" in out and "refresh_token" in out and '"y"' not in out

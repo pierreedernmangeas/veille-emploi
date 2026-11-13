@@ -18,6 +18,7 @@ from veille import config, historique, recap
 from veille import google_acces as G
 from veille import production as P
 from veille.base import Base
+from veille.moteur_prive import MoteurAbsent
 from veille.modele import cle, maintenant, vers_rc
 from veille.sheet import Veille
 from veille.sources import Contexte, tout_collecter
@@ -69,10 +70,33 @@ def compte_attendu(ids: dict) -> str:
     return ids["compte"]
 
 
+class SecretInvalide(RuntimeError):
+    """Message sûr pour le journal public : nomme le secret et le problème, jamais son contenu."""
+
+
+def lire_secret_json(nom: str, cles: tuple = ()) -> dict:
+    brut = (os.environ.get(nom) or "").strip()
+    if not brut:
+        raise SecretInvalide(f"le secret {nom} est vide ou absent (Settings > Secrets and variables > Actions).")
+    if any(c in brut for c in "“”‘’«»"):
+        raise SecretInvalide(f"le secret {nom} contient des guillemets typographiques (“ ” ou « ») : recolle-le avec des guillemets droits \".")
+    try:
+        d = json.loads(brut)
+    except ValueError:
+        raise SecretInvalide(f"le secret {nom} n'est pas lisible : recolle exactement la ligne qui commence par {{ et finit par }}, sans rien autour.") from None
+    if not isinstance(d, dict):
+        raise SecretInvalide(f"le secret {nom} doit commencer par {{ et finir par }}.")
+    manque = [c for c in cles if not d.get(c)]
+    if manque:
+        raise SecretInvalide(f"il manque {', '.join(manque)} dans le secret {nom} : recolle la ligne complète.")
+    return d
+
+
 def dependances_reelles() -> Dependances:
     from veille import moteur_prive
-    ids = json.loads(os.environ.get("VEILLE_IDS") or "{}")
-    s = G.services(os.environ["GOOGLE_TOKEN"])
+    ids = lire_secret_json("VEILLE_IDS", ("compte",))
+    lire_secret_json("GOOGLE_TOKEN", ("client_id", "client_secret", "refresh_token"))
+    s = G.services(os.environ["GOOGLE_TOKEN"].strip())
     G.verifier_compte(s, compte_attendu(ids))
     return Dependances(services=s, moteur=moteur_prive.installer(s, ids=ids), modules=modules_sources(), ids=ids,
                        secrets={k: os.environ.get(k, "") for k in SECRETS})
@@ -248,6 +272,9 @@ def main(argv=None) -> int:
             return 0
     try:
         veille(x.moment, essai=x.essai)
+    except (SecretInvalide, G.CompteInattendu, MoteurAbsent) as e:     # messages écrits pour être montrés : aucune donnée dedans
+        print(f"Veille interrompue : {e}")
+        return 1
     except Exception as e:                      # dépôt public : jamais de trace (code du moteur privé, données) dans le journal
         print(f"Veille interrompue : {type(e).__name__}. Le détail est dans le mail récap et l'onglet Sources.")
         return 1
