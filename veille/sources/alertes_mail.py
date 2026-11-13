@@ -3,6 +3,7 @@
 Lecture seule : aucun mail n'est marqué lu, déplacé ni étiqueté. Les offres LinkedIn sont complétées par leur fiche publique."""
 import base64
 import re
+import time
 from email import message_from_bytes, policy
 
 from veille.modele import Offre
@@ -83,6 +84,21 @@ def _texte(raw: bytes) -> tuple:
     return exp, (re.sub(r"<[^>]+>", "\n", _contenu(corps)) if corps else "")
 
 
+PAUSE_S = 0.12                                   # Gmail limite les lectures par seconde : environ 8 mails par seconde au plus
+
+
+def _lire(g, mid, essais=4):
+    """Un mail brut ; si Gmail répond « quota » ou « rate limit », on attend (3, 6, 12 s) puis on réessaie."""
+    for k in range(essais):
+        try:
+            return g.users().messages().get(userId="me", id=mid, format="raw").execute(num_retries=3)
+        except Exception as e:
+            t = str(e).lower()
+            if k == essais - 1 or not any(x in t for x in ("quota", "rate limit", "ratelimit", "429")):
+                raise
+            time.sleep(3 * 2 ** k)
+
+
 def collecter(ctx) -> list:
     g = ctx.services.gmail
     q = "from:(" + " OR ".join(EXPEDITEURS) + f") after:{int(ctx.depuis.timestamp())}"
@@ -98,7 +114,8 @@ def collecter(ctx) -> list:
     erreurs = []
     for mid in ids[:MAX_MAILS]:
         try:                                    # un mail illisible n'arrête pas la lecture des autres
-            m = g.users().messages().get(userId="me", id=mid, format="raw").execute(num_retries=3)
+            m = _lire(g, mid)
+            time.sleep(PAUSE_S)
             exp, texte = _texte(base64.urlsafe_b64decode(m["raw"]))
             if "linkedin" in exp:
                 out += analyser_linkedin(texte)

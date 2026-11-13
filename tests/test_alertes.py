@@ -68,3 +68,29 @@ def test_un_mail_illisible_n_arrete_pas_les_autres(monkeypatch):
     ctx = Contexte(cfg={}, rech={}, depuis=datetime.now(timezone.utc) - timedelta(hours=6), moment="midi", services=s)
     offres = AM.collecter(ctx)
     assert len(offres) >= 3
+
+
+def test_quota_gmail_attend_et_reessaie(monkeypatch):
+    s = faux_services()
+    s.gmail.ajouter_message(_mail("Alertes LinkedIn Jobs <jobalerts-noreply@linkedin.com>", lire("linkedin_2.txt")))
+    vrai_get, refus = s.gmail.messages().get, []
+
+    class API:
+        def __init__(self, base):
+            self.base = base
+
+        def list(self, **k):
+            return self.base.list(**k)
+
+        def get(self, **k):
+            if len(refus) < 2:
+                refus.append(1)
+                raise RuntimeError('HttpError 403 ... "Quota exceeded for quota metric \'Total Query Cost\'"')
+            return vrai_get(**k)
+    api = API(s.gmail.messages())
+    monkeypatch.setattr(type(s.gmail), "messages", lambda self: api)
+    pauses = []
+    monkeypatch.setattr(AM.time, "sleep", lambda x: pauses.append(x))
+    monkeypatch.setattr(AM.LC, "completer", lambda o: o)
+    ctx = Contexte(cfg={}, rech={}, depuis=datetime.now(timezone.utc) - timedelta(hours=6), moment="midi", services=s)
+    assert len(AM.collecter(ctx)) == 3 and len(refus) == 2 and sum(pauses) >= 3
