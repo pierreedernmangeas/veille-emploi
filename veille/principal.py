@@ -257,6 +257,14 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
     return {k: v_ for k, v_ in resume.items() if k != "top"}
 
 
+def _endroit(e: BaseException) -> str:
+    """Fichier:ligne du dernier passage dans le code de ce dépôt (public) : jamais de message ni de code du moteur privé."""
+    import traceback
+    ici = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    pas = [f for f in traceback.extract_tb(e.__traceback__) if os.path.abspath(f.filename).startswith(ici)]
+    return " > ".join(f"{os.path.relpath(f.filename, ici)}:{f.lineno}" for f in pas[-3:]) or "hors du dépôt"
+
+
 def main(argv=None) -> int:
     a = argparse.ArgumentParser(description="Veille emploi")
     a.add_argument("--moment", choices=["matin", "midi", "soir"], required=True)
@@ -276,7 +284,7 @@ def main(argv=None) -> int:
         print(f"Veille interrompue : {e}")
         return 1
     except Exception as e:                      # dépôt public : jamais de trace (code du moteur privé, données) dans le journal
-        print(f"Veille interrompue : {type(e).__name__}. Le détail est dans le mail récap et l'onglet Sources.")
+        print(f"Veille interrompue : {type(e).__name__} ({_endroit(e)}). Le détail est dans le mail récap.")
         return 1
     return 0
 

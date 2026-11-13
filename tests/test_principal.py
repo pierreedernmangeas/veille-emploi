@@ -209,3 +209,12 @@ def test_jeton_google_incomplet_nomme(monkeypatch, capsys):
     assert PR.main(["--moment", "matin", "--forcer"]) == 1
     out = capsys.readouterr().out
     assert "GOOGLE_TOKEN" in out and "refresh_token" in out and '"y"' not in out
+
+
+def test_echec_indique_l_endroit_dans_le_code_public(monkeypatch, capsys):
+    def boum(*a, **k):
+        int("pas un nombre : détail privé")
+    monkeypatch.setattr(PR, "veille", boum)
+    assert PR.main(["--moment", "matin", "--forcer"]) == 1
+    out = capsys.readouterr().out
+    assert "ValueError" in out and "test_principal.py" in out and "détail privé" not in out
