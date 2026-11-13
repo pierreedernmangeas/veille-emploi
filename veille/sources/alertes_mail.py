@@ -65,16 +65,22 @@ def analyser_indeed(texte: str) -> list:
     return out
 
 
+def _contenu(part) -> str:
+    try:
+        return part.get_content()
+    except Exception:                           # jeu de caractères inconnu ou mal déclaré : on décode quand même
+        brut = part.get_payload(decode=True) or b""
+        return brut.decode(part.get_content_charset() or "utf-8", "replace") if isinstance(brut, bytes) else str(brut)
+
+
 def _texte(raw: bytes) -> tuple:
     msg = message_from_bytes(raw, policy=policy.default)
     exp = str(msg.get("From", "")).lower()
     corps = msg.get_body(preferencelist=("plain",))
-    if corps is None:
-        corps = msg.get_body(preferencelist=("html",))
-        texte = re.sub(r"<[^>]+>", "\n", corps.get_content()) if corps else ""
-    else:
-        texte = corps.get_content()
-    return exp, texte
+    if corps is not None:
+        return exp, _contenu(corps)
+    corps = msg.get_body(preferencelist=("html",))
+    return exp, (re.sub(r"<[^>]+>", "\n", _contenu(corps)) if corps else "")
 
 
 def collecter(ctx) -> list:
@@ -89,13 +95,21 @@ def collecter(ctx) -> list:
             break
     out = []
     ctx.budget["alertes_mails_lus"] = len(ids[:MAX_MAILS])
+    erreurs = []
     for mid in ids[:MAX_MAILS]:
-        m = g.users().messages().get(userId="me", id=mid, format="raw").execute(num_retries=3)
-        exp, texte = _texte(base64.urlsafe_b64decode(m["raw"]))
-        if "linkedin" in exp:
-            out += analyser_linkedin(texte)
-        elif "indeed" in exp:
-            out += analyser_indeed(texte)
+        try:                                    # un mail illisible n'arrête pas la lecture des autres
+            m = g.users().messages().get(userId="me", id=mid, format="raw").execute(num_retries=3)
+            exp, texte = _texte(base64.urlsafe_b64decode(m["raw"]))
+            if "linkedin" in exp:
+                out += analyser_linkedin(texte)
+            elif "indeed" in exp:
+                out += analyser_indeed(texte)
+        except Exception as e:
+            erreurs.append(type(e).__name__)
+    if erreurs:
+        if len(erreurs) == len(ids[:MAX_MAILS]):
+            raise RuntimeError(f"aucun des {len(erreurs)} mails d'alerte n'a pu être lu ({erreurs[-1]})")
+        ctx.budget.setdefault("notes_sources", []).append(f"{NOM} : {len(erreurs)} mail(s) illisible(s) ignoré(s)")
     vus, uniques = set(), []
     for o in out:
         if o.url not in vus:

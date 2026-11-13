@@ -56,3 +56,15 @@ def test_liens_alertes_generes(tmp_path):
                               "french_speaker": [], "vie": []}, str(p))
     t = p.read_text(encoding="utf8")
     assert n >= 5 and t.count("https://www.linkedin.com/jobs/search/") == n and "f_TPR" not in t
+
+
+def test_un_mail_illisible_n_arrete_pas_les_autres(monkeypatch):
+    s = faux_services()
+    s.gmail.ajouter_message(b"From: Alertes LinkedIn Jobs <jobalerts-noreply@linkedin.com>\r\nContent-Type: text/plain; charset=x-inconnu-42\r\n"
+                            b"Content-Transfer-Encoding: 8bit\r\n\r\nAcheteur \xe9\xff junior\r\n")
+    s.gmail.ajouter_message(b"From: Indeed <donotreply@jobalert.indeed.com>\r\nContent-Type: multipart/alternative; boundary=\"x\"\r\n\r\n--x--\r\n")
+    s.gmail.ajouter_message(_mail("Alertes LinkedIn Jobs <jobalerts-noreply@linkedin.com>", lire("linkedin_2.txt")))
+    monkeypatch.setattr(AM.LC, "completer", lambda o: o)
+    ctx = Contexte(cfg={}, rech={}, depuis=datetime.now(timezone.utc) - timedelta(hours=6), moment="midi", services=s)
+    offres = AM.collecter(ctx)
+    assert len(offres) >= 3
