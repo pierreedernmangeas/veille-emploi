@@ -80,3 +80,14 @@ def test_entreprises_lire_et_memoriser_adresse():
     assert v.entreprises_lire() == [("Démo", "https://www.demo.fr/carrieres")]
     v.entreprises_maj([{"entreprise": "Démo", "methode": "navigateur -> workday", "offres": 3, "erreur": ""}], {"Démo": "https://demo.wd3.myworkdayjobs.com/Ext"})
     assert v.entreprises_lire() == [("Démo", "https://demo.wd3.myworkdayjobs.com/Ext")]
+
+
+def test_onglet_sans_en_tete_repare():
+    """Onglet « Entreprises » rempli sans ligne d'en-tête (veille interrompue) : l'en-tête est réinséré, rien n'est perdu."""
+    s = faux_services()
+    c = s.gc.open_by_key("sheet1")
+    f = c.add_worksheet("Entreprises")
+    f.append_rows([["Airbus", "https://ag.wd3.myworkdayjobs.com/Airbus", "", "", "", "https://ag.wd3.myworkdayjobs.com/Airbus", ""]])
+    v = Veille(s.gc, "sheet1")
+    assert v.entreprises_lire() == [("Airbus", "https://ag.wd3.myworkdayjobs.com/Airbus")]
+    assert c.worksheet("À postuler").get_all_values()[0][0] == "Vue le"

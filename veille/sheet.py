@@ -21,6 +21,14 @@ def _date(v) -> str:
     return v.strftime("%Y-%m-%d") if hasattr(v, "strftime") else (str(v)[:10] if v else "")
 
 
+def _sans_vide(v: list) -> list:
+    """Lignes d'un onglet sans les lignes entièrement vides de fin ([[]] pour un onglet vide)."""
+    v = [list(r) for r in (v or [])]
+    while v and not any(str(c).strip() for c in v[-1]):
+        v.pop()
+    return v
+
+
 def _lieu(o: dict) -> str:
     lieu, pays = str(o.get("location") or ""), str(o.get("country") or "")
     return f"{lieu}, {pays}" if lieu and pays and pays.lower() not in lieu.lower() else lieu or pays
@@ -37,12 +45,15 @@ class Veille:
         existants = {w.title: w for w in self.classeur.worksheets()}
         for nom, cols in ONGLETS.items():
             w = existants.get(nom) or self.classeur.add_worksheet(title=nom, rows=1000, cols=len(cols))
-            if not w.get_all_values():
+            v = _sans_vide(w.get_all_values())
+            if not v:                               # gspread renvoie [[]] pour un onglet vide
                 w.update(values=[cols], range_name="A1", value_input_option="RAW")
-                try:
-                    w.freeze(rows=1)
-                except Exception:
-                    pass
+            elif v[0][:1] != cols[:1]:              # données sans en-tête (veille interrompue) : en-tête réinséré au-dessus
+                w.insert_row(cols, index=1, value_input_option="RAW")
+            try:
+                w.freeze(rows=1)
+            except Exception:
+                pass
             self.f[nom] = w
 
     # --- lignes ---------------------------------------------------------------------------------------------------
@@ -79,7 +90,7 @@ class Veille:
 
     # --- entreprises ----------------------------------------------------------------------------------------------
     def _tableau(self, nom):
-        v = self.f[nom].get_all_values()
+        v = _sans_vide(self.f[nom].get_all_values())
         return (v[0], v[1:]) if v else (ONGLETS[nom], [])
 
     def entreprises_initialiser(self, entreprises: list) -> None:

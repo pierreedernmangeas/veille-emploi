@@ -183,7 +183,10 @@ class FauxFeuille:
         self.lignes = []
 
     def get_all_values(self):
-        return [list(l) for l in self.lignes]
+        return [list(l) for l in self.lignes] or [[]]          # comme gspread : un onglet vide renvoie [[]]
+
+    def insert_row(self, values, index=1, value_input_option=None):
+        self.lignes.insert(index - 1, list(values))
 
     def append_rows(self, rows, value_input_option=None):
         self.lignes += [list(r) for r in rows]
