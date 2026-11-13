@@ -1,0 +1,471 @@
+_mode_emploi: 'Mots-clés de la veille. Ajoute ou retire des intitulés : ils sont repris à la veille suivante.'
+france_achats:
+- acheteur junior
+- acheteuse junior
+- acheteur débutant
+- acheteur jeune diplômé
+- assistant achats
+- assistante achats
+- assistant acheteur
+- assistante acheteuse
+- acheteur
+- acheteuse
+- acheteur approvisionneur
+- acheteur projet
+- acheteur industriel
+- acheteur indirect
+- acheteur international
+- acheteur famille
+- acheteur commodités
+- acheteur production
+- acheteur opérationnel
+- acheteur hors production
+- acheteur prestations
+- acheteur transport
+- acheteur logistique
+- acheteur marchés publics
+- acheteur public
+- chargé d'achats
+- chargée d'achats
+- gestionnaire achats
+- analyste achats
+- category buyer
+- sourcing
+- chargé de sourcing
+- consultant achats junior
+france_supply:
+- approvisionneur
+- approvisionneuse
+- approvisionneur junior
+- gestionnaire approvisionnement
+- gestionnaire des approvisionnements
+- chargé d'approvisionnement
+- technicien approvisionnement
+- planificateur production
+- planificateur approvisionnement
+- planificateur supply chain
+- demand planner
+- supply planner
+- prévisionniste
+- gestionnaire de flux
+- pilote de flux
+- chargé supply chain
+- chargée supply chain
+- coordinateur supply chain
+- analyste supply chain
+- supply chain analyst
+- assistant supply chain
+- supply chain junior
+- ingénieur supply chain junior
+- coordinateur logistique
+- chargé logistique
+- coordinateur transport
+- gestionnaire transport
+- chargé import export
+- assistant import export
+- ordonnanceur
+france_graduate:
+- graduate programme supply chain
+- graduate program procurement
+- graduate programme achats
+- programme jeunes diplômés achats
+- programme jeunes diplômés supply chain
+- graduate programme opérations
+europe_titres:
+- junior buyer
+- buyer
+- purchasing specialist
+- procurement specialist
+- procurement analyst
+- purchasing analyst
+- junior procurement
+- procurement assistant
+- purchasing assistant
+- procurement officer
+- sourcing specialist
+- category buyer
+- operational buyer
+- tactical buyer
+- indirect buyer
+- supply chain analyst
+- supply chain specialist
+- supply chain coordinator
+- supply planner
+- demand planner
+- material planner
+- inventory planner
+- production planner
+- logistics coordinator
+- logistics specialist
+- order management specialist
+- procure to pay
+- graduate programme supply chain
+- graduate program procurement
+french_speaker:
+- French speaking buyer
+- French speaking procurement
+- French speaking purchasing
+- French speaking supply chain
+- French speaking logistics
+- French speaking order management
+- French procure to pay
+- French speaker customer logistics
+europe_pays:
+  Belgium: Belgium
+  Luxembourg: Luxembourg
+  Switzerland: Genève
+  Netherlands: Netherlands
+  Ireland: Ireland
+  Germany: Germany
+  Spain: Spain
+  Portugal: Portugal
+  Poland: Poland
+  Romania: Romania
+  Czech Republic: Czech Republic
+  Italy: Italy
+  Austria: Austria
+  Denmark: Denmark
+  Sweden: Sweden
+  Hungary: Hungary
+pays_francophones:
+- Belgium
+- Luxembourg
+- Switzerland
+vie:
+- VIE
+- V.I.E
+- volontariat international
+- VIE buyer
+- VIE acheteur
+- VIE achats
+- VIE purchasing
+- VIE procurement
+- VIE sourcing
+- VIE supply chain
+- VIE logistique
+- VIE logistics
+- VIE planner
+- VIE supplier
+- VIE transport
+- VIE approvisionnement
+- VIE approvisionneur
+- VIE demand
+- VIE import export
+sites_carrieres_mots:
+- acheteur
+- buyer
+- procurement
+- purchasing
+- supply chain
+- approvisionnement
+- planner
+- logistique
+entreprises:
+- nom: Airbus
+  url: https://ag.wd3.myworkdayjobs.com/Airbus
+- nom: Valeo
+  url: https://valeo.wd3.myworkdayjobs.com/valeo_jobs
+- nom: Sanofi
+  url: https://sanofi.wd3.myworkdayjobs.com/SanofiCareers
+- nom: Pernod Ricard
+  url: https://pernodricard.wd3.myworkdayjobs.com/pernod-ricard
+- nom: Ipsen
+  url: https://ipsen.wd103.myworkdayjobs.com/ipsen_careers
+- nom: Air Liquide
+  url: https://airliquidehr.wd3.myworkdayjobs.com/AirLiquideExternalCareer
+- nom: Stellantis
+  url: https://stellantis.wd3.myworkdayjobs.com/External_Career_Site_ID01
+- nom: Michelin
+  url: https://michelinhr.wd3.myworkdayjobs.com/Michelin
+- nom: Renault Group
+  url: https://alliancewd.wd3.myworkdayjobs.com/renault-group-careers
+- nom: Thales
+  url: https://thales.wd3.myworkdayjobs.com/Careers
+- nom: Chanel
+  url: https://cc.wd3.myworkdayjobs.com/ChanelCareers
+- nom: Daher
+  url: https://daher.wd3.myworkdayjobs.com/Daher
+- nom: Unibail-Rodamco-Westfield
+  url: https://urw.wd3.myworkdayjobs.com/urw_career_site
+- nom: Eiffage
+  url: https://eiffage.wd3.myworkdayjobs.com/eiffage_careers
+- nom: Schneider Electric
+  url: jibe:https://careers.se.com
+- nom: TotalEnergies
+  url: https://jobs.totalenergies.com/en_US/careers/SearchJobs
+- nom: Alstom
+  url: https://jobsearch.alstom.com/search/?q=
+- nom: CMA CGM
+  url: https://jobs.cmacgm-group.com/go/VIE-2/9732301/
+- nom: Safran
+  url: https://www.safran-group.com/fr/offres?search={kw}&page={page}
+- nom: Eurofins
+  url: https://jobs.smartrecruiters.com/Eurofins
+- nom: Bosch
+  url: https://jobs.smartrecruiters.com/BoschGroup
+- nom: Accor
+  url: https://jobs.smartrecruiters.com/AccorCorpo
+- nom: Lesaffre
+  url: https://www.lesaffre.com/fr/carrieres/
+- nom: Danone
+  url: https://careers.danone.com/en-global/jobs.html
+- nom: L'Oréal
+  url: https://careers.loreal.com/en/search-jobs
+- nom: Saint-Gobain
+  url: https://joinus.saint-gobain.com/fr
+- nom: Capgemini
+  url: https://www.capgemini.com/careers/join-capgemini/job-search/?search_term=VIE
+- nom: LVMH
+  url: https://www.lvmh.com/en/join-us/our-job-offers
+- nom: Moët Hennessy
+  url: https://www.mhdkareers.com/
+- nom: Kering
+  url: https://www.kering.com/en/talent/job-offers/
+- nom: Hermès
+  url: https://hermes.jobs/
+- nom: Decathlon
+  url: https://joinus.decathlon.fr/fr/
+- nom: Engie
+  url: https://jobs.engie.com/
+- nom: Legrand
+  url: https://www.legrandgroup.com/en/careers
+- nom: Forvia
+  url: https://www.forvia.com/en/careers
+- nom: OPmobility
+  url: https://www.opmobility.com/fr/carrieres
+- nom: Nexans
+  url: https://www.nexans.com/en/careers.html
+- nom: Arkema
+  url: https://www.arkema.com/global/en/careers/
+- nom: Vinci
+  url: https://jobs.vinci.com/
+- nom: Bouygues
+  url: https://www.bouygues.com/carrieres/
+- nom: Orange
+  url: https://orange.jobs/jobs/search.do?keyword=VIE
+- nom: EssilorLuxottica
+  url: https://jobs.essilorluxottica.com/
+- nom: bioMérieux
+  url: https://careers.biomerieux.com/
+- nom: Bel
+  url: https://www.groupe-bel.com/fr/carrieres/
+- nom: Lactalis
+  url: https://www.lactalis.com/carrieres/
+- nom: Savencia
+  url: https://www.savencia.com/carrieres
+- nom: Groupe SEB
+  url: https://www.groupeseb.com/fr/carrieres
+- nom: Servier
+  url: https://servier.com/carrieres/
+- nom: Pierre Fabre
+  url: https://www.pierre-fabre.com/fr/carrieres
+- nom: Sodexo
+  url: https://jobs.sodexo.com/
+- nom: Vallourec
+  url: https://www.vallourec.com/careers
+- nom: Eramet
+  url: https://www.eramet.com/fr/carrieres
+- nom: Imerys
+  url: https://www.imerys.com/careers
+- nom: Hutchinson
+  url: https://www.hutchinson.com/fr/carrieres
+- nom: Dassault Systèmes
+  url: https://www.3ds.com/careers/jobs?keyword=VIE
+- nom: Dassault Aviation
+  url: https://www.dassault-aviation.com/fr/groupe/carrieres/
+- nom: MBDA
+  url: https://www.mbda-careers.com/
+- nom: Naval Group
+  url: https://www.naval-group.com/fr/carrieres
+- nom: Orano
+  url: https://www.orano.group/fr/carrieres
+- nom: EDF
+  url: https://www.edf.fr/edf-recrute
+- nom: Framatome
+  url: https://www.framatome.com/fr/carrieres/
+- nom: Veolia
+  url: https://www.veolia.com/fr/carrieres
+- nom: Suez
+  url: https://www.suez.com/fr/rejoignez-nous
+- nom: Geodis
+  url: https://geodis.com/fr/carrieres
+- nom: CEVA Logistics
+  url: https://www.cevalogistics.com/en/careers
+- nom: FM Logistic
+  url: https://www.fmlogistic.com/carrieres/
+- nom: STEF
+  url: https://www.stef.com/fr/carrieres
+- nom: Clasquin
+  url: https://www.clasquin.com/fr/carrieres/
+- nom: Bureau Veritas
+  url: https://group.bureauveritas.com/fr/carrieres
+- nom: Technip Energies
+  url: https://www.technipenergies.com/careers
+- nom: TechnipFMC
+  url: https://www.technipfmc.com/en/careers/
+- nom: Spie
+  url: https://www.spie.com/fr/carrieres
+- nom: Fives
+  url: https://www.fivesgroup.com/careers
+- nom: Verallia
+  url: https://www.verallia.com/carrieres/
+- nom: Exail
+  url: https://www.exail.com/careers
+- nom: Latécoère
+  url: https://www.latecoere.aero/carrieres/
+- nom: Figeac Aéro
+  url: https://www.figeac-aero.com/carrieres/
+- nom: ATR
+  url: https://www.atr-aircraft.com/careers/
+- nom: Liebherr Aerospace
+  url: https://www.liebherr.com/fr/fra/carriere/carriere.html
+- nom: Alten
+  url: https://www.alten.com/join-us/
+- nom: Expleo
+  url: https://expleo-jobs.com/
+- nom: Segula
+  url: https://www.segulatechnologies.com/fr/carrieres/
+- nom: Akkodis
+  url: https://www.akkodis.com/fr-fr/carrieres
+- nom: Assystem
+  url: https://www.assystem.com/fr/carrieres/
+- nom: Egis
+  url: https://www.egis-group.com/fr/carrieres
+- nom: Systra
+  url: https://www.systra.com/fr/carrieres/
+- nom: Sopra Steria
+  url: https://www.soprasteria.fr/carrieres
+- nom: Atos
+  url: https://atos.net/fr/carrieres
+- nom: Air France-KLM
+  url: https://recrutement.airfrance.com/
+- nom: Rémy Cointreau
+  url: https://www.remy-cointreau.com/fr/carrieres/
+- nom: Clarins
+  url: https://www.groupeclarins.com/fr/carrieres/
+- nom: L'Occitane
+  url: https://group.loccitane.com/careers
+- nom: Lacoste
+  url: https://corporate.lacoste.com/fr/carrieres/
+- nom: Mane
+  url: https://www.mane.com/careers
+- nom: Robertet
+  url: https://www.robertet.com/fr/carrieres/
+- nom: BIC
+  url: https://careers.bic.com/
+- nom: Somfy
+  url: https://www.somfy-group.com/fr/carrieres
+- nom: Hager
+  url: https://hagergroup.com/fr/carriere
+- nom: Socomec
+  url: https://www.socomec.fr/fr/carrieres
+- nom: Mersen
+  url: https://www.mersen.com/fr/carrieres
+- nom: Roquette
+  url: https://www.roquette.com/carrieres
+- nom: Tereos
+  url: https://tereos.com/fr/carrieres/
+- nom: Avril
+  url: https://www.groupeavril.com/fr/carrieres
+- nom: Limagrain
+  url: https://www.limagrain.com/fr/carrieres
+- nom: Sodiaal
+  url: https://www.sodiaal.coop/fr/carrieres/
+- nom: Bonduelle
+  url: https://www.bonduelle.com/fr/carrieres
+- nom: Carrefour
+  url: https://www.carrefour.com/fr/carrieres
+- nom: Adeo
+  url: https://www.adeo.com/fr/carrieres
+- nom: Auchan
+  url: https://www.auchan-recrute.fr/
+- nom: Kiabi
+  url: https://www.kiabi.jobs/
+- nom: Chargeurs
+  url: https://www.chargeurs.com/careers/
+- nom: Plastivaloire
+  url: https://www.plastivaloire.com/carrieres/
+- nom: Saint Jean / Bigard
+  url: https://www.bigard.fr/carrieres
+- nom: Nestlé France
+  url: https://www.nestle.fr/emplois
+- nom: Unilever
+  url: https://careers.unilever.com/
+- nom: Procter & Gamble
+  url: https://www.pgcareers.com/
+- nom: ArianeGroup
+  url: https://www.arianegroup.com/fr/carrieres/
+- nom: KNDS France
+  url: https://www.knds.fr/carrieres
+- nom: Lisi
+  url: https://www.lisi-group.com/fr/carrieres/
+- nom: Mecachrome
+  url: https://www.mecachrome.com/fr/carrieres
+- nom: Soitec
+  url: https://www.soitec.com/fr/carrieres
+- nom: STMicroelectronics
+  url: https://www.st.com/content/st_com/en/about/careers.html
+- nom: Akwel
+  url: https://www.akwel-automotive.com/carrieres
+- nom: Manitou
+  url: https://www.manitou-group.com/fr/carrieres
+- nom: Haulotte
+  url: https://www.haulotte.com/fr/carrieres
+- nom: Groupe Beneteau
+  url: https://www.beneteau-group.com/fr/carrieres/
+- nom: Delachaux
+  url: https://www.delachaux.com/careers
+- nom: Exel Industries
+  url: https://www.exel-industries.com/fr/carrieres
+- nom: Groupe Atlantic
+  url: https://www.groupe-atlantic.com/carrieres
+- nom: Tarkett
+  url: https://www.tarkett-group.com/fr/carrieres/
+- nom: Vicat
+  url: https://www.vicat.fr/carrieres
+- nom: Colas
+  url: https://www.colas.com/fr/carrieres
+- nom: Bolloré
+  url: https://www.bollore.com/fr/carrieres/
+- nom: Hillebrand Gori
+  url: https://www.hillebrandgori.com/careers
+- nom: Groupe Rocher
+  url: https://www.groupe-rocher.com/fr/carrieres
+- nom: Fnac Darty
+  url: https://www.fnacdarty.com/carrieres/
+- nom: InVivo
+  url: https://www.invivo-group.com/fr/carrieres
+- nom: Vilmorin & Cie
+  url: https://www.vilmorincie.com/fr/carrieres
+- nom: LDC
+  url: https://www.ldc.fr/carrieres
+- nom: Andros
+  url: https://www.andros.fr/carrieres
+- nom: Guerbet
+  url: https://www.guerbet.com/fr/carrieres
+- nom: Boiron
+  url: https://www.boiron.fr/carrieres
+- nom: Virbac
+  url: https://corporate.virbac.com/careers
+- nom: Ceva Santé Animale
+  url: https://www.ceva.com/fr/carrieres
+- nom: Voltalia
+  url: https://www.voltalia.com/fr/carrieres
+- nom: SLB
+  url: https://careers.slb.com/
+- nom: BNP Paribas
+  url: https://group.bnpparibas/emploi-carriere/toutes-offres-emploi?q=VIE
+- nom: Société Générale
+  url: https://careers.societegenerale.com/en/search?query=VIE
+- nom: Crédit Agricole CIB
+  url: https://jobs.ca-cib.com/
+- nom: Natixis
+  url: https://www.natixis.com/fr/carrieres
+- nom: Louis Vuitton
+  url: https://jobs.louisvuitton.com/
+- nom: Sephora
+  url: https://www.sephora.fr/carrieres/
+- nom: Longchamp
+  url: https://www.longchamp.com/fr/fr/careers.html
+- nom: GXO
+  url: https://gxo.com/careers/

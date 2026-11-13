@@ -1,0 +1,32 @@
+# Réglages de la veille emploi (modifiables sans toucher au code)
+# Le compte Google attendu est dans le secret VEILLE_IDS (clé « compte ») : aucune adresse dans ce dépôt public.
+
+seuil_documents: 7          # note minimale pour préparer CV + lettre
+seuil_liste: 6              # note minimale pour apparaître dans « À postuler » (sans documents entre 6 et 7)
+max_documents: 40           # CV + lettres préparés au plus par veille (meilleures notes d'abord)
+jours_premier_passage: 7    # premier passage : offres des 7 derniers jours seulement
+relance_jours: 7            # relance préparée en brouillon 7 jours après l'envoi, sans réponse
+
+# Heures de lancement (heure de Paris) : résultats prêts environ 40 à 55 min après
+heures:
+  matin: "06:47"
+  midi: "13:17"
+  soir: "18:37"
+
+# Sites carrières : complets (navigateur compris) le matin, connecteurs directs seulement le midi et le soir
+sites_carrieres:
+  complet: [matin]
+  leger: [midi, soir]
+
+apify:
+  acteur: "curious_coder~linkedin-jobs-scraper"   # sans connexion, entrée : adresses de recherche LinkedIn ; modifiable
+  plafond_dollars: 4.5      # arrêt de la couche quand le crédit gratuit du mois (5 $) approche
+  max_resultats_par_requete: 100
+
+gemini:
+  modele: gemini-flash-latest
+  max_appels: 60            # par veille (offre gratuite limitée) ; au-delà, moteur v12 seul
+
+linkedin_jobspy:
+  pages_max: 2
+  pause_s: [3, 6]

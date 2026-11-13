@@ -1,0 +1,81 @@
+name: Veille emploi
+
+on:
+  schedule:
+    # Deux horaires UTC par veille (heure d'hiver / d'été) : le programme ne tourne que sur celui qui tombe à l'heure de Paris prévue.
+    - cron: "47 5 * * *"    # matin, hiver (06:47 Paris)
+    - cron: "47 4 * * *"    # matin, été
+    - cron: "17 12 * * *"   # midi, hiver (13:17 Paris)
+    - cron: "17 11 * * *"   # midi, été
+    - cron: "37 17 * * *"   # soir, hiver (18:37 Paris)
+    - cron: "37 16 * * *"   # soir, été
+  workflow_dispatch:
+    inputs:
+      moment:
+        description: "Quelle veille lancer"
+        type: choice
+        options: [matin, midi, soir]
+        default: matin
+
+concurrency:
+  group: veille
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write      # seulement pour réactiver ce workflow (compteur des 60 jours)
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Quelle veille ?
+        id: quand
+        run: |
+          case "${{ github.event.schedule }}" in
+            "47 5 * * *"|"47 4 * * *") echo "moment=matin" >> "$GITHUB_OUTPUT" ;;
+            "17 12 * * *"|"17 11 * * *") echo "moment=midi" >> "$GITHUB_OUTPUT" ;;
+            "37 17 * * *"|"37 16 * * *") echo "moment=soir" >> "$GITHUB_OUTPUT" ;;
+            *) echo "moment=${{ inputs.moment || 'matin' }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+          if [ -n "${{ github.event.schedule }}" ]; then
+            echo 'garde=--cron "${{ github.event.schedule }}"' >> "$GITHUB_OUTPUT"
+          else
+            echo "garde=--forcer" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Garder les veilles actives (GitHub les coupe après 60 jours sans activité du dépôt)
+        if: github.event_name == 'schedule' && steps.quand.outputs.moment == 'matin'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/veille.yml/enable"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Dépendances
+        run: pip install -r requirements.txt
+
+      - name: Navigateur (veille du matin, sites carrières complets)
+        if: steps.quand.outputs.moment == 'matin'
+        run: python -m playwright install --with-deps chromium
+
+      - name: Veille
+        env:
+          GOOGLE_TOKEN: ${{ secrets.GOOGLE_TOKEN }}
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VEILLE_IDS: ${{ secrets.VEILLE_IDS }}
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          VIE_API_KEY: ${{ secrets.VIE_API_KEY }}
+          PYTHONUNBUFFERED: "1"
+        run: python -m veille.principal --moment ${{ steps.quand.outputs.moment }} ${{ steps.quand.outputs.garde }}

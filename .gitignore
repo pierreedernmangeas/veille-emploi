@@ -1,0 +1,8 @@
+.superpowers/
+__pycache__/
+*.pyc
+sortie_essai/
+.pytest_cache/
+*.sqlite
+client_secret*.json
+livraison/
