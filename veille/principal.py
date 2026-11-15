@@ -157,6 +157,7 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
             base.sauver_vers_drive(s, conf)
 
     v = Veille(s.gc, _sheet_id(s, racine, deps.ids))
+    onglet = v.nom_onglet_veille(moment)            # « 15/11 matin » : nom de l'onglet de cette veille et colonne « Veille » du suivi
     derniere = base.meta("derniere_veille")
     premier = derniere is None
     if premier:
@@ -193,7 +194,7 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
     # 3) CV + lettres pour les meilleures, puis lignes du Sheet. Une erreur sur une offre n'arrête pas les autres : l'offre est
     #    retentée aux veilles suivantes, ESSAIS_MAX fois au plus. La base est sauvée sur Drive dès qu'un brouillon existe.
     ia = {"cle": deps.secrets.get("GEMINI_API_KEY", ""), "cfg": cfg, "compteur": {}}
-    n_docs, n_brouillons, top, erreurs_offres = 0, 0, [], []
+    n_docs, n_brouillons, top, erreurs_offres, de_cette_veille = 0, 0, [], [], []
     for o in gardees:
         note = o.get("note") or 0
         if note < cfg.get("seuil_liste", 6):
@@ -223,7 +224,8 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
                     n_brouillons += 1
             else:
                 base.marquer(o["cle"], note=note)
-            v.a_postuler_ajouter([v.ligne_a_postuler(o, docs)])
+            v.a_postuler_ajouter([v.ligne_a_postuler(o, docs, onglet)])
+            de_cette_veille.append((o, docs))
             top.append(o)
             sauver()
         except Exception as e:
@@ -237,6 +239,8 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
                 base.ajouter(par_cle[o["cle"]], "echec")
             sauver()
     v.toutes_ajouter([v.ligne_toutes(o) for o in gardees])
+    v.onglet_veille(moment, de_cette_veille, nom=onglet)
+    v.a_postuler_trier()
 
     # 4) suivi des candidatures, santé des sources, entreprises
     suivi = CA.suivre(s.gmail, v, base, date.today(), cfg.get("relance_jours", 7))

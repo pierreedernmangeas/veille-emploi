@@ -177,13 +177,33 @@ class _FilsAPI:
         return _Exec(f)
 
 
+_ids_feuilles = itertools.count(100)
+
+
+def _affiche(v):
+    """Ce que gspread renvoie pour une cellule : la valeur affichée (texte d'un lien HYPERLINK, #ERROR! si mauvais séparateur)."""
+    s = "" if v is None else str(v)
+    m = re.match(r'^=HYPERLINK\("([^"]*)"\s*([;,])\s*"([^"]*)"\)$', s)
+    if m:
+        return m.group(3) if m.group(2) == FauxClasseur.SEP else "#ERROR!"
+    return s[1:] if s.startswith("'") else s
+
+
+def _col(lettres):
+    n = 0
+    for c in lettres:
+        n = n * 26 + ord(c) - 64
+    return n - 1
+
+
 class FauxFeuille:
     def __init__(self, titre):
         self.title = titre
-        self.lignes = []
+        self.id = next(_ids_feuilles)
+        self.lignes = []                                        # valeurs saisies (formules comprises)
 
     def get_all_values(self):
-        return [list(l) for l in self.lignes] or [[]]          # comme gspread : un onglet vide renvoie [[]]
+        return [[_affiche(c) for c in l] for l in self.lignes] or [[]]   # comme gspread : un onglet vide renvoie [[]]
 
     def insert_row(self, values, index=1, value_input_option=None):
         self.lignes.insert(index - 1, list(values))
@@ -195,12 +215,18 @@ class FauxFeuille:
         self.lignes.append(list(row))
 
     def update(self, values=None, range_name="A1", value_input_option=None):
-        m = re.match(r"A(\d+)", range_name)
-        start = int(m.group(1)) - 1 if m else 0
+        m = re.match(r"([A-Z]+)(\d+)", range_name)
+        c0, start = (_col(m.group(1)), int(m.group(2)) - 1) if m else (0, 0)
         for k, r in enumerate(values):
             while len(self.lignes) <= start + k:
                 self.lignes.append([])
-            self.lignes[start + k] = list(r)
+            l = self.lignes[start + k]
+            if c0 == 0 and len(r) >= len(l):
+                self.lignes[start + k] = list(r)
+                continue
+            while len(l) < c0 + len(r):
+                l.append("")
+            l[c0:c0 + len(r)] = list(r)
 
     def clear(self):
         self.lignes = []
@@ -227,9 +253,12 @@ class FauxFeuille:
 
 
 class FauxClasseur:
-    def __init__(self, sid, titre="classeur"):
-        self.id, self.title, self.feuilles = sid, titre, {}
+    SEP = ";"                                                   # Sheet réglé en français, comme celui de Pierre-Edern
+
+    def __init__(self, sid, titre="classeur", locale="fr_FR"):
+        self.id, self.title, self.feuilles, self.locale = sid, titre, {}, locale
         self.url = f"https://sheets/{sid}"
+        self.requetes = []
 
     def worksheet(self, titre):
         if titre not in self.feuilles:
@@ -237,15 +266,32 @@ class FauxClasseur:
             raise gspread.exceptions.WorksheetNotFound(titre)
         return self.feuilles[titre]
 
-    def add_worksheet(self, title, rows=100, cols=26):
-        self.feuilles[title] = FauxFeuille(title)
-        return self.feuilles[title]
+    def add_worksheet(self, title, rows=100, cols=26, index=None):
+        f = FauxFeuille(title)
+        items = list(self.feuilles.items())
+        items.insert(len(items) if index is None else index, (title, f))
+        self.feuilles = dict(items)
+        return f
+
+    def del_worksheet(self, ws):
+        self.feuilles.pop(ws.title, None)
 
     def get_worksheet(self, i):
         return list(self.feuilles.values())[i]
 
     def worksheets(self):
         return list(self.feuilles.values())
+
+    def batch_update(self, body):
+        self.requetes += body.get("requests", [])
+        for r in body.get("requests", []):
+            p = r.get("updateSheetProperties", {}).get("properties", {})
+            if "index" in p:
+                f = next(x for x in self.feuilles.values() if x.id == p["sheetId"])
+                items = [(t, x) for t, x in self.feuilles.items() if x is not f]
+                items.insert(p["index"], (f.title, f))
+                self.feuilles = dict(items)
+        return {}
 
 
 class FauxGc:

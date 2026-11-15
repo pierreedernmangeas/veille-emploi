@@ -218,3 +218,15 @@ def test_echec_indique_l_endroit_dans_le_code_public(monkeypatch, capsys):
     assert PR.main(["--moment", "matin", "--forcer"]) == 1
     out = capsys.readouterr().out
     assert "ValueError" in out and "test_principal.py" in out and "détail privé" not in out
+
+
+def test_onglet_de_la_veille_cree(moteur_local, tmp_path):
+    s = faux_services()
+    PR.veille("midi", deps=_deps(s, moteur_local, [Source(_offres())], tmp_path), cfg=CFG, rech={"entreprises": []}, journal=lambda *a: None)
+    c = s.gc.open_by_key("sheet1")
+    onglets = [w for w in c.worksheets() if w.title.endswith(" midi")]
+    assert len(onglets) == 1 and c.worksheets()[1] is onglets[0]
+    lignes = onglets[0].get_all_values()
+    assert len(lignes) == 2 and "Acheteur" in lignes[1][1]
+    suivi = c.worksheet("À postuler").get_all_values()
+    assert suivi[1][1] == onglets[0].title                                  # colonne « Veille » du suivi global

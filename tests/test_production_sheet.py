@@ -43,7 +43,8 @@ def test_ligne_sheet_colonnes():
     lignes = s.gc.open_by_key("sheet1").worksheet("À postuler").get_all_values()
     assert lignes[0] == COLONNES_A_POSTULER
     d = dict(zip(lignes[0], lignes[1]))
-    assert d["Poste"] == "Acheteur junior" and d["Mode"] == "Mail (brouillon prêt)" and d["Statut"] == "À envoyer" and d["Clé"] == "demo|acheteur junior"
+    assert d["Poste"] == "Acheteur junior" and d["Candidature"] == "Mail (brouillon prêt)" and d["Statut"] == "À envoyer" and d["Clé"] == "demo|acheteur junior"
+    assert d["CV"] == "CV" and d["Offre"] == "Ouvrir"                 # liens courts et cliquables
     v.statut_maj("demo|acheteur junior", Statut="Envoyée", **{"Date d'envoi": "2026-11-13"})
     st = v.statuts_lire()
     assert st[0]["Statut"] == "Envoyée" and st[0]["Date d'envoi"] == "2026-11-13"
@@ -54,7 +55,8 @@ def test_texte_jamais_formule():
     v = Veille(s.gc, "sheet1")
     o = dict(title="=HYPERLINK(\"x\")", company="+Démo", url="https://ex/1", note=7, cle="k")
     v.a_postuler_ajouter([v.ligne_a_postuler(o, {})])
-    d = dict(zip(*s.gc.open_by_key("sheet1").worksheet("À postuler").get_all_values()[:2]))
+    f = s.gc.open_by_key("sheet1").worksheet("À postuler")
+    d = dict(zip(f.get_all_values()[0], f.lignes[1]))                # valeurs saisies : apostrophe devant, jamais une formule
     assert d["Poste"].startswith("'=") and d["Entreprise"].startswith("'+")
 
 
