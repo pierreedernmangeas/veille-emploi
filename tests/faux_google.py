@@ -202,14 +202,27 @@ class FauxFeuille:
         self.id = next(_ids_feuilles)
         self.lignes = []                                        # valeurs saisies (formules comprises)
 
-    def get_all_values(self):
+    def get_all_values(self, value_render_option=None):
+        if "FORMULA" in str(value_render_option or "").upper():
+            return [list(l) for l in self.lignes] or [[]]
         return [[_affiche(c) for c in l] for l in self.lignes] or [[]]   # comme gspread : un onglet vide renvoie [[]]
 
     def insert_row(self, values, index=1, value_input_option=None):
         self.lignes.insert(index - 1, list(values))
 
-    def append_rows(self, rows, value_input_option=None):
-        self.lignes += [list(r) for r in rows]
+    def append_rows(self, rows, value_input_option=None, insert_data_option=None, table_range=None):
+        """Comme l'API Google (mode OVERWRITE par défaut) : la « table » est le bloc de lignes non vides qui part de la ligne 1 ;
+        les données sont écrites juste après, par-dessus ce qui s'y trouve. Une ligne vide au milieu fait donc écraser la suite."""
+        fin = 0
+        while fin < len(self.lignes) and any(str(c).strip() for c in self.lignes[fin]):
+            fin += 1
+        for k, r in enumerate(rows):
+            if insert_data_option == "INSERT_ROWS":
+                self.lignes.insert(fin + k, list(r))
+            elif fin + k < len(self.lignes):
+                self.lignes[fin + k] = list(r)
+            else:
+                self.lignes.append(list(r))
 
     def append_row(self, row, value_input_option=None):
         self.lignes.append(list(row))
@@ -230,6 +243,9 @@ class FauxFeuille:
 
     def clear(self):
         self.lignes = []
+
+    def add_rows(self, n):
+        self.lignes_en_plus = getattr(self, "lignes_en_plus", 0) + n
 
     def row_values(self, i):
         return self.lignes[i - 1] if len(self.lignes) >= i else []

@@ -4,7 +4,10 @@
 - un onglet par veille (« 15/11 matin ») : uniquement les offres sorties à cette veille, triées par note ; les 21 dernières sont gardées ;
 - « Toutes les offres » (tout ce qui a été gardé), « Sources » (santé de chaque source), « Entreprises » (sites carrières, modifiables)."""
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+PARIS = ZoneInfo("Europe/Paris")
 
 COLONNES_A_POSTULER = ["Vue le", "Veille", "Note", "Statut", "Poste", "Entreprise", "Lieu", "Contrat", "Catégorie", "Candidature", "Offre", "CV",
                        "Lettre", "Dossier", "Brouillon", "Date d'envoi", "Relance", "Publiée", "Candidats", "Points forts", "Manques", "Clé"]
@@ -18,7 +21,10 @@ LIENS = {"Offre": "Ouvrir", "CV": "CV", "Lettre": "Lettre", "Dossier": "Dossier"
 STATUTS = ["À envoyer", "Envoyée", "Réponse reçue", "Relance prête", "Relancée", "Entretien", "Refus", "Pas intéressé", "Brouillon supprimé"]
 ONGLETS_VEILLE_MAX = 21                                                  # une semaine de veilles (3 par jour)
 NOM_VEILLE = re.compile(r"^\d\d/\d\d ")
-VIDES = {"Feuille 1", "Feuil1", "Sheet1"}                                # onglet créé d'office avec un nouveau Sheet
+VIDES = {"Feuille 1", "Feuil1", "Sheet1"}
+ETATS_SUIVI = ("documents", "liste", "brouillon", "envoyee", "relance_prete", "relancee", "reponse", "supprime")   # états de la base
+STATUT_ETAT = {"envoyee": "Envoyée", "relance_prete": "Relance prête", "relancee": "Relancée", "reponse": "Réponse reçue", "supprime": "Brouillon supprimé"}
+LIEN_BROUILLONS = "https://mail.google.com/mail/u/0/#drafts"                                # onglet créé d'office avec un nouveau Sheet
 LARGEURS_A_POSTULER = {"Vue le": 120, "Veille": 95, "Note": 50, "Statut": 115, "Poste": 280, "Entreprise": 170, "Lieu": 150, "Contrat": 85,
                        "Catégorie": 140, "Candidature": 140, "Offre": 60, "CV": 45, "Lettre": 55, "Dossier": 65, "Brouillon": 75,
                        "Date d'envoi": 95, "Relance": 85, "Publiée": 90, "Candidats": 80, "Points forts": 320, "Manques": 260, "Clé": 60}
@@ -49,8 +55,44 @@ def _lieu(o: dict) -> str:
     return f"{lieu}, {pays}" if lieu and pays and pays.lower() not in lieu.lower() else lieu or pays
 
 
+def _maintenant_dt() -> datetime:
+    """Heure de Paris (les machines GitHub sont en UTC)."""
+    return datetime.now(PARIS)
+
+
 def _maintenant() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M")
+    return _maintenant_dt().strftime("%Y-%m-%d %H:%M")
+
+
+def _utc_vers_paris(texte: str) -> str:
+    """« Vue le » écrit en UTC par les premières veilles (avant le 16/11/2026) -> heure de Paris."""
+    try:
+        t = datetime.strptime(str(texte)[:16], "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return str(texte or "")
+    return t.astimezone(PARIS).strftime("%Y-%m-%d %H:%M")
+
+
+def _etiquette(texte: str) -> str:
+    try:
+        return datetime.strptime(str(texte)[:16], "%Y-%m-%d %H:%M").strftime("%d/%m %Hh%M")
+    except ValueError:
+        return "?"
+
+
+def _ajouter(w, lignes: list, option="USER_ENTERED") -> None:
+    """Écrit les lignes juste après la dernière ligne remplie, à une position exacte. L'« ajout » de Google (values.append) cherche
+    lui-même la fin du tableau et, après une ligne vide, écrase les lignes suivantes : 5 veilles y ont perdu leurs offres."""
+    if not lignes:
+        return
+    n = len(_sans_vide(w.get_all_values()))
+    try:
+        manque = n + len(lignes) - int(w.row_count)
+        if manque > 0:
+            w.add_rows(manque + 200)
+    except Exception:
+        pass
+    w.update(values=lignes, range_name=f"A{n + 1}", value_input_option=option)
 
 
 def _colonne(i: int) -> str:
@@ -140,8 +182,9 @@ class Veille:
 
     # --- onglet par veille ----------------------------------------------------------------------------------------
     def nom_onglet_veille(self, moment: str, quand: datetime | None = None) -> str:
-        quand = quand or datetime.now()
-        base = f"{quand.strftime('%d/%m')} {moment}"
+        """« 16/11 14h03 matin » : jour et heure de Paris où la veille a tourné (GitHub la lance parfois avec des heures de retard)."""
+        quand = quand or _maintenant_dt()
+        base = f"{quand.strftime('%d/%m %Hh%M')} {moment}"
         noms = {w.title for w in self.classeur.worksheets()}
         nom, k = base, 2
         while nom in noms:                          # deuxième veille du même moment (relance à la main)
@@ -206,6 +249,75 @@ class Veille:
                 ds = sorted(ds, key=lambda d: -_note(d.get("Note")))
                 self._creer_onglet_veille(etiquette, [COLONNES_VEILLE] + [[d.get(c, "") for c in COLONNES_VEILLE] for d in ds])
 
+    # --- reconstruction (une fois) -------------------------------------------------------------------------------
+    def reconstruire(self, base_lignes: list) -> int:
+        """Remet dans « À postuler » toutes les offres suivies par la base (CV, lettre, dossier depuis la base, le reste depuis
+        « Toutes les offres »), garde les statuts et notes déjà saisis, passe les heures UTC des premières veilles en heure de Paris
+        et recrée un onglet par veille. Renvoie le nombre de lignes du suivi."""
+        w = self.f["À postuler"]
+        affiche = _sans_vide(w.get_all_values())
+        brut = _sans_vide(self._essayer(lambda: w.get_all_values(value_render_option="FORMULA")) or affiche)
+        tete = [ANCIENS_NOMS.get(c, c) for c in (affiche[0] if affiche else COLONNES_A_POSTULER)]
+        existants = {}
+        for k, l in enumerate(affiche[1:], start=1):
+            d = dict(zip(tete, l + [""] * (len(tete) - len(l))))
+            b = brut[k] if k < len(brut) else []
+            for c in LIENS:
+                if c in tete and tete.index(c) < len(b):
+                    d["_lien_" + c] = str(b[tete.index(c)] or "")
+            if d.get("Clé"):
+                existants[d["Clé"]] = d
+        t_aff = _sans_vide(self.f["Toutes les offres"].get_all_values())
+        toutes = {}
+        for l in t_aff[1:]:
+            d = dict(zip(t_aff[0], l + [""] * (len(t_aff[0]) - len(l))))
+            if d.get("Clé"):
+                toutes[d["Clé"]] = d
+        base = {b["cle"]: b for b in base_lignes}
+        cles = list(existants) + [c for c, b in base.items() if b.get("etat") in ETATS_SUIVI and c in toutes and c not in existants]
+
+        def lien(e, col, url, texte):
+            v = e.get("_lien_" + col, "")
+            if v.startswith("=HYPERLINK("):
+                return v
+            return self._lien(v if v.startswith("http") else url, texte)
+        lignes = []
+        for cle in cles:
+            e, t, b = existants.get(cle, {}), toutes.get(cle, {}), base.get(cle, {})
+            statut = e.get("Statut") if e.get("Statut") not in (None, "", "À envoyer") else STATUT_ETAT.get(b.get("etat"), e.get("Statut") or "À envoyer")
+            d = {c: e.get(c) or t.get(c) or "" for c in ("Note", "Poste", "Entreprise", "Lieu", "Contrat", "Catégorie", "Publiée", "Candidats",
+                                                         "Points forts", "Manques", "Date d'envoi", "Relance")}
+            d.update({"Vue le": _utc_vers_paris(e.get("Vue le") or t.get("Vue le")), "Statut": statut, "Clé": cle,
+                      "Candidature": e.get("Candidature") or ("Mail (brouillon prêt)" if b.get("brouillon_id") else "Site / LinkedIn"),
+                      "Offre": lien(e, "Offre", t.get("Lien de l'offre"), "Ouvrir"), "CV": lien(e, "CV", b.get("cv"), "CV"),
+                      "Lettre": lien(e, "Lettre", b.get("lm"), "Lettre"), "Dossier": lien(e, "Dossier", b.get("dossier"), "Dossier"),
+                      "Brouillon": lien(e, "Brouillon", LIEN_BROUILLONS if b.get("brouillon_id") else "", "Brouillon")})
+            for c in ("Poste", "Entreprise", "Lieu", "Points forts", "Manques"):
+                d[c] = _txt(d[c])
+            lignes.append(d)
+        lignes.sort(key=lambda d: d["Vue le"])
+        groupes, precedent = [], None                 # une veille = des lignes écrites à moins d'une heure d'intervalle
+        for d in lignes:
+            try:
+                t = datetime.strptime(d["Vue le"][:16], "%Y-%m-%d %H:%M")
+            except ValueError:
+                t = precedent
+            if not groupes or t is None or precedent is None or t - precedent > timedelta(minutes=60):
+                groupes.append((_etiquette(d["Vue le"]), []))
+            groupes[-1][1].append(d)
+            d["Veille"] = groupes[-1][0]
+            precedent = t or precedent
+        lignes.sort(key=lambda d: (d["Vue le"], _note(d["Note"])), reverse=True)
+        w.clear()
+        _ajouter(w, [COLONNES_A_POSTULER] + [[d.get(c, "") for c in COLONNES_A_POSTULER] for d in lignes])
+        for x in [x for x in self.classeur.worksheets() if NOM_VEILLE.match(x.title)]:
+            self._essayer(lambda x=x: self.classeur.del_worksheet(x))
+        for etiquette, ds in groupes[-ONGLETS_VEILLE_MAX:]:     # chronologique : chaque onglet passe devant le précédent
+            ds = sorted(ds, key=lambda d: -_note(d["Note"]))
+            self._creer_onglet_veille(etiquette, [COLONNES_VEILLE] + [[d.get(c, "") for c in COLONNES_VEILLE] for d in ds])
+        self._mettre_en_forme(w, COLONNES_A_POSTULER, True)
+        return len(lignes)
+
     # --- lignes ---------------------------------------------------------------------------------------------------
     def ligne_a_postuler(self, o: dict, docs: dict, veille: str = "") -> list:
         d = {"Vue le": _maintenant(), "Veille": veille, "Note": o.get("note"), "Statut": "À envoyer", "Poste": _txt(o.get("title")),
@@ -226,8 +338,7 @@ class Veille:
         return [d[c] for c in COLONNES_TOUTES]
 
     def a_postuler_ajouter(self, lignes: list) -> None:
-        if lignes:
-            self.f["À postuler"].append_rows(lignes, value_input_option="USER_ENTERED")
+        _ajouter(self.f["À postuler"], lignes)
 
     def a_postuler_trier(self) -> None:
         """Plus récentes en haut, puis meilleure note."""
@@ -238,12 +349,11 @@ class Veille:
             "sortSpecs": [{"dimensionIndex": c.index("Vue le"), "sortOrder": "DESCENDING"}, {"dimensionIndex": c.index("Note"), "sortOrder": "DESCENDING"}]}}]}))
 
     def toutes_ajouter(self, lignes: list) -> None:
-        if lignes:
-            self.f["Toutes les offres"].append_rows(lignes, value_input_option="USER_ENTERED")
+        _ajouter(self.f["Toutes les offres"], lignes)
 
     def sources_ecrire(self, sante: list, moment: str) -> None:
         q = _maintenant()
-        self.f["Sources"].append_rows([[q, moment, x.source, x.n, x.duree_s, _txt(x.erreur)] for x in sante], value_input_option="USER_ENTERED")
+        _ajouter(self.f["Sources"], [[q, moment, x.source, x.n, x.duree_s, _txt(x.erreur)] for x in sante])
 
     # --- entreprises ----------------------------------------------------------------------------------------------
     def _tableau(self, nom):
@@ -254,7 +364,7 @@ class Veille:
         """Premier lancement : la liste de recherches.yaml est copiée dans l'onglet, que Pierre-Edern peut ensuite compléter."""
         _, lignes = self._tableau("Entreprises")
         if not lignes and entreprises:
-            self.f["Entreprises"].append_rows([[e["nom"], e["url"], "", "", "", e["url"], ""] for e in entreprises], value_input_option="RAW")
+            _ajouter(self.f["Entreprises"], [[e["nom"], e["url"], "", "", "", e["url"], ""] for e in entreprises], "RAW")
 
     def entreprises_lire(self) -> list:
         tete, lignes = self._tableau("Entreprises")

@@ -230,3 +230,18 @@ def test_onglet_de_la_veille_cree(moteur_local, tmp_path):
     assert len(lignes) == 2 and "Acheteur" in lignes[1][1]
     suivi = c.worksheet("À postuler").get_all_values()
     assert suivi[1][1] == onglets[0].title                                  # colonne « Veille » du suivi global
+
+
+def test_reconstruction_une_seule_fois(moteur_local, tmp_path, monkeypatch):
+    s = faux_services()
+    appels = []
+    vrai = PR.Veille.reconstruire
+
+    def compte(self, lignes):
+        appels.append(len(lignes))
+        return vrai(self, lignes)
+    monkeypatch.setattr(PR.Veille, "reconstruire", compte)
+    deps = _deps(s, moteur_local, [Source(_offres())], tmp_path)
+    PR.veille("matin", deps=deps, cfg=CFG, rech={"entreprises": []}, journal=lambda *a: None)
+    PR.veille("midi", deps=deps, cfg=CFG, rech={"entreprises": []}, journal=lambda *a: None)
+    assert len(appels) == 1

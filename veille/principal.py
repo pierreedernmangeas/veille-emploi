@@ -20,7 +20,7 @@ from veille import production as P
 from veille.base import Base
 from veille.moteur_prive import MoteurAbsent
 from veille.modele import cle, maintenant, vers_rc
-from veille.sheet import Veille
+from veille.sheet import ETATS_SUIVI, Veille
 from veille.sources import Contexte, tout_collecter
 from veille.traitement import trier
 
@@ -157,6 +157,10 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
             base.sauver_vers_drive(s, conf)
 
     v = Veille(s.gc, _sheet_id(s, racine, deps.ids))
+    if not base.meta("sheet_v2"):                   # une seule fois : offres perdues remises, heures de Paris, un onglet par veille
+        journal("Sheet reconstruit :", v.reconstruire(base.lignes(ETATS_SUIVI)), "lignes")
+        base.meta("sheet_v2", "1")
+        sauver()
     onglet = v.nom_onglet_veille(moment)            # « 15/11 matin » : nom de l'onglet de cette veille et colonne « Veille » du suivi
     derniere = base.meta("derniere_veille")
     premier = derniere is None
