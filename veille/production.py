@@ -38,7 +38,7 @@ def produire(o: dict, m, s, racine_id: str, ia: dict | None, travail: str | None
     notes = RI.rediger(r, ia["cle"], ia["cfg"], ia["compteur"]) if ia else list(RI.REPLI)
     OA.fabriquer(r)
     r["a_relire"] = list(r.get("a_relire") or []) + notes
-    poste = AD.poste_lm(r["titre"])
+    poste = AD.poste_lm(r["titre"], r.get("ville", ""), r["ent"]) or r["entete"]["titre"]
     dossier_id = G.dossier(s.drive, ["Veille", _nom_dossier(r["ent"], poste)], racine_id)
     txt = os.path.join(r["wd"], "Annonce_et_analyse.txt")
     with open(txt, "w", encoding="utf8") as f:

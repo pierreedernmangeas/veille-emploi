@@ -28,7 +28,7 @@ def archive(tmp_path_factory):
 
 def test_archive_sans_fichier_inattendu(archive):
     noms = set(tarfile.open(archive).getnames())
-    attendus = {f + ".py" for f in ["offre_auto", "missions", "cible", "cible_radar", "adapt", "pdf_rapide", "analyse_offre", "cv_engine", "lm_compose", "radar_commun", "mails"]}
+    attendus = {f + ".py" for f in ["offre_auto", "missions", "cible", "cible_radar", "adapt", "pdf_rapide", "analyse_offre", "cv_engine", "lm_compose", "radar_commun", "mails", "intitule", "qualite", "coller"]}
     attendus |= {f + ".json" for f in ["missions", "cv_bank", "keywords", "cours_bank", "lm_bank"]}
     attendus |= {f"fonts/Serif-{x}.ttf" for x in ["Regular", "Bold", "Italic", "BoldItalic"]}
     if os.path.exists(os.path.join(OFFRE_CV, "cerveau.py")):

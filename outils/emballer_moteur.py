@@ -10,7 +10,7 @@ import re
 import sys
 import tarfile
 
-PY = ["offre_auto", "missions", "cible", "cible_radar", "adapt", "pdf_rapide", "analyse_offre", "cv_engine", "lm_compose", "mails"]
+PY = ["offre_auto", "missions", "cible", "cible_radar", "adapt", "pdf_rapide", "analyse_offre", "cv_engine", "lm_compose", "mails", "intitule", "qualite", "coller"]
 JSON = ["missions", "cv_bank", "keywords", "cours_bank", "lm_bank"]
 POLICES = [f"fonts/Serif-{x}.ttf" for x in ["Regular", "Bold", "Italic", "BoldItalic"]]
 

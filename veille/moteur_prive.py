@@ -23,7 +23,7 @@ class Moteur:
     dossier: str
 
 
-MODULES = ["cible", "missions", "lm_compose", "cv_engine", "adapt", "analyse_offre", "pdf_rapide", "offre_auto", "radar_commun", "cible_radar", "cerveau", "mails"]
+MODULES = ["cible", "missions", "lm_compose", "cv_engine", "adapt", "analyse_offre", "pdf_rapide", "offre_auto", "radar_commun", "cible_radar", "cerveau", "mails", "intitule", "qualite", "coller"]
 
 
 def installer(s: G.Services, dest: str = "/tmp/moteur", ids: dict | None = None) -> Moteur:
