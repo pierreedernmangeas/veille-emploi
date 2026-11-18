@@ -49,4 +49,4 @@ def produire(o: dict, m, s, racine_id: str, ia: dict | None, travail: str | None
     mail, objet = OA.consigne_mail(desc)
     return dict(cv=cv, lm=lm, dossier=G.lien_dossier(s.drive, dossier_id), dossier_id=dossier_id, cv_local=r["cv_pdf"], lm_local=r["lm_pdf"],
                 mail=mail, objet=objet, poste=poste, ent=r["ent"], note=r["note"]["total"], lang=r["spec"]["lang"], alertes=r["a_relire"],
-                forts=r.get("forts") or [], manques=r.get("faibles") or [])
+                forts=r.get("forts") or [], manques=r.get("faibles") or [], ats=(r.get("ats") or {}).get("couverture", ""))

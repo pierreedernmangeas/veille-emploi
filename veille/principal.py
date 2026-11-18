@@ -228,6 +228,8 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
                     n_brouillons += 1
             else:
                 base.marquer(o["cle"], note=note)
+            if docs:                            # pour le mail récapitulatif : adéquation CV / offre et premier atout
+                o["ats"], o["atout"] = docs.get("ats", ""), (docs.get("forts") or [""])[0][:110]
             v.a_postuler_ajouter([v.ligne_a_postuler(o, docs, onglet)])
             de_cette_veille.append((o, docs))
             top.append(o)

@@ -40,3 +40,20 @@ def test_vie_monde_garde(moteur_local):
                                      url="https://mon-vie-via.businessfrance.fr/offres/1", description=desc, contrat_brut="V.I.E")], moteur_local)
     assert len(gardees) == 1, rejets
     assert gardees[0]["categorie"] == "V.I.E"
+
+
+def test_doublon_proche_meme_poste_deux_noms_entreprise(moteur_local):
+    """Le même poste publié sous « Le Bon Marché » et « GROUPE BON MARCHÉ : Le Bon Marché Rive Gauche… » : un seul dossier."""
+    a = _o("Assistant Achat - CDI", ent="Le Bon Marché", lieu="Paris, France")
+    b = _o("Assistant achat (F/H) - CDI", ent="GROUPE BON MARCHÉ : Le Bon Marché Rive Gauche, La Grande Epicerie de Paris", lieu="Paris, Île-de-France, France")
+    c = _o("Assistant Achat - CDI", ent="Groupe SOS", lieu="Metz, France")
+    d = _o("Assistant Achat - CDI", ent="Groupe SOS Seniors", lieu="Issy, France")
+    gardees, rejets = T.trier([a, b, c, d], moteur_local)
+    noms = sorted(g["company"] for g in gardees)
+    assert len(gardees) == 2, noms
+    assert rejets.get("doublon (même poste, même entreprise)") == 2
+
+
+def test_pas_doublon_entreprises_differentes(moteur_local):
+    gardees, _ = T.trier([_o("Acheteur junior", ent="Groupe Atlantic"), _o("Acheteur junior", ent="Groupe Seb")], moteur_local)
+    assert len(gardees) == 2

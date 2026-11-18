@@ -87,4 +87,37 @@ def trier(offres: list, m, max_age_days=None, lire=True) -> tuple:
     finally:
         m.cible_radar.installer(rc, "cdi")      # le moteur reste dans son mode par défaut pour la suite (CV, lettre)
     gardees.sort(key=lambda o: (-(o.get("note") or 0), -(o["posted"].timestamp() if o.get("posted") else 0)))
-    return gardees, rejets
+    return _sans_doublons_proches(gardees, rc, rejets), rejets
+
+
+VIDES_TITRE = {"cdi", "cdd", "h", "f", "m", "x", "d", "w", "ou", "et", "de", "des", "du", "la", "le", "les", "en", "a", "the", "and", "of",
+               "temps", "plein", "partiel", "full", "time", "e", "se", "euse", "rice"}
+VIDES_ENT = {"groupe", "group", "le", "la", "les", "l", "de", "du", "des", "et", "the", "and", "sa", "sas", "sasu", "sarl", "gmbh", "ag", "bv", "nv",
+             "ltd", "limited", "inc", "llc", "plc", "spa", "srl", "france", "international", "holding", "corporation", "corp", "co", "company"}
+
+
+def _mots(t, vides):
+    import re
+    return [w.rstrip("s") for w in re.findall(r"[a-z0-9]+", t) if w not in vides and len(w) > 1]
+
+
+def _sans_doublons_proches(gardees, rc, rejets):
+    """Même intitulé et même entreprise écrite autrement (« Le Bon Marché » / « GROUPE BON MARCHÉ : Le Bon Marché Rive Gauche »,
+    « Groupe SOS » / « Groupe SOS Seniors ») : un seul dossier, le mieux noté (la liste est déjà triée)."""
+    vus, out = [], []
+    for o in gardees:
+        titre = frozenset(_mots(rc.norm(rc.strip_hf(o.get("title") or "")), VIDES_TITRE))
+        ent = _mots(rc.norm(o.get("company") or ""), VIDES_ENT)
+        doublon = False
+        for t2, e2 in vus:
+            if titre and titre == t2 and ent and e2:
+                court, long_ = (ent, e2) if len(ent) <= len(e2) else (e2, ent)
+                if court[0] in long_:
+                    doublon = True
+                    break
+        if doublon:
+            rejets["doublon (même poste, même entreprise)"] += 1
+            continue
+        vus.append((titre, ent))
+        out.append(o)
+    return out

@@ -8,7 +8,8 @@ from email.message import EmailMessage
 def _ligne(o):
     return (f"<tr><td><b>{o.get('note', '')}</b></td><td>{html.escape(str(o.get('categorie') or ''))}</td>"
             f"<td><a href=\"{html.escape(o.get('url') or '')}\">{html.escape(str(o.get('title') or ''))}</a></td>"
-            f"<td>{html.escape(str(o.get('company') or ''))}</td></tr>")
+            f"<td>{html.escape(str(o.get('company') or ''))}</td><td>{html.escape(str(o.get('ats') or ''))}</td>"
+            f"<td>{html.escape(str(o.get('atout') or ''))}</td></tr>")
 
 
 def contenu(resume: dict) -> tuple:
@@ -19,7 +20,7 @@ def contenu(resume: dict) -> tuple:
     corps = (f"<p><b>{r.get('nouvelles', 0)}</b> nouvelles offres trouvées, <b>{r.get('gardees', 0)}</b> gardées, <b>{r.get('documents', 0)}</b> CV + lettres prêts, "
              f"<b>{r.get('brouillons', 0)}</b> brouillons de candidature et <b>{r.get('relances', 0)}</b> relances prêts dans Gmail.</p>"
              + (f"<p><a href=\"{html.escape(r['lien_sheet'])}\">Ouvrir le Sheet « Veille emploi »</a></p>" if r.get("lien_sheet") else "")
-             + (f"<h3>Les 10 meilleures</h3><table cellpadding=\"4\"><tr><th>Note</th><th>Catégorie</th><th>Poste</th><th>Entreprise</th></tr>{top}</table>" if top else "")
+             + (f"<h3>Les 10 meilleures</h3><table cellpadding=\"4\"><tr><th>Note</th><th>Catégorie</th><th>Poste</th><th>Entreprise</th><th>Adéquation CV</th><th>Ton atout pour ce poste</th></tr>{top}</table>" if top else "")
              + (f"<h3>Sources en erreur</h3><ul>{err}</ul>" if err else ""))
     return sujet, corps
 

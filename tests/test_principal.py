@@ -245,3 +245,11 @@ def test_reconstruction_une_seule_fois(moteur_local, tmp_path, monkeypatch):
     PR.veille("matin", deps=deps, cfg=CFG, rech={"entreprises": []}, journal=lambda *a: None)
     PR.veille("midi", deps=deps, cfg=CFG, rech={"entreprises": []}, journal=lambda *a: None)
     assert len(appels) == 1
+
+
+def test_recap_montre_adequation_cv_et_atout():
+    from veille import recap
+    sujet, corps = recap.contenu(dict(moment="matin", nouvelles=3, gardees=2, documents=1, top=[
+        dict(note=8.5, categorie="CDI France", url="https://ex.fr/1", title="Acheteur junior", company="Acme", ats="100 %",
+             atout="212 k USD de réductions obtenues sur factures contestées")]))
+    assert "100 %" in corps and "Adéquation CV" in corps and "212 k USD" in corps
