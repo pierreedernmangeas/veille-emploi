@@ -61,7 +61,9 @@ def termes_par_pays(rech: dict) -> list:
     fr = rech.get("france_achats", []) + rech.get("france_supply", []) + rech.get("france_graduate", [])
     t = [("indeed", x, "France", "France") for x in fr]
     for pays, lieu in (rech.get("europe_pays") or {}).items():
-        mots = rech.get("europe_titres", [])[:16] + rech.get("french_speaker", [])
+        mots = rech.get("europe_titres", [])[:21] + rech.get("french_speaker", [])
+        if pays == "Spain":                         # il parle espagnol (B2) : l'Espagne est aussi cherchée en espagnol
+            mots += rech.get("espagnol_titres", [])
         if pays in rech.get("pays_francophones", []):
             mots += rech.get("france_achats", [])[:10] + rech.get("france_supply", [])[:8]
         t += [("indeed", x, lieu, pays) for x in dict.fromkeys(mots)]

@@ -86,3 +86,19 @@ def test_france_travail_en_panne_n_empeche_pas_adzuna(monkeypatch):
     ctx = _ctx()
     assert AO.collecter(ctx) == ["offre adzuna"]
     assert any("France Travail" in n for n in ctx.budget.get("notes_sources", []))
+
+
+def test_espagne_cherchee_aussi_en_espagnol():
+    from veille import config
+    from veille.sources import sites_emploi as S
+    plan = S.termes_par_pays(config.recherches())
+    espagne = {t for site, t, lieu, pays in plan if pays == "Spain"}
+    assert "comprador junior" in espagne and "técnico de compras" in espagne
+
+
+def test_achats_transport_cherches_partout():
+    from veille import config
+    from veille.sources import sites_emploi as S
+    plan = S.termes_par_pays(config.recherches())
+    assert ("indeed", "acheteur fret", "France", "France") in plan
+    assert any(t == "freight procurement" and pays == "Netherlands" for _, t, _, pays in plan)

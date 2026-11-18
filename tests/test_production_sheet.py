@@ -28,7 +28,7 @@ def test_produire_offre_reelle(moteur_local, tmp_path):
     res = P.produire(_telespazio(), moteur_local, s, racine, ia=None, travail=str(tmp_path))
     assert res["poste"] == "Acheteur Junior"          # « Acheteur.euse - Junior » : sans marque de genre, casse de l'annonce
     noms = sorted(f["name"] for f in s.drive.fichiers.values() if f.get("parents") == [res["dossier_id"]])
-    assert len(noms) == 3 and "Annonce_et_analyse.txt" in noms and sum(n.endswith(".pdf") for n in noms) == 2
+    assert len(noms) == 4 and "Annonce_et_analyse.txt" in noms and "Preparation_entretien.txt" in noms and sum(n.endswith(".pdf") for n in noms) == 2
     assert res["cv"] and res["lm"] and res["dossier"].startswith("https://drive.google.com/")
     assert res["alertes"] and "IA indisponible" in " ".join(res["alertes"])          # sans clé : moteur v12, signalé
 

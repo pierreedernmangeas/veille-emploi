@@ -128,6 +128,19 @@ def _sheet_id(s, racine: str, ids: dict) -> str:
     return f["id"] if f else s.gc.create("Veille emploi", folder_id=racine).id
 
 
+def urgente(o: dict) -> bool:
+    """Publiée il y a moins de 48 h et moins de 50 candidats (ou nombre inconnu) : à envoyer aujourd'hui, c'est là que les réponses arrivent."""
+    from datetime import datetime, timezone
+    p = o.get("posted")
+    if not p:
+        return False
+    if p.tzinfo is None:
+        p = p.replace(tzinfo=timezone.utc)
+    heures = (datetime.now(timezone.utc) - p).total_seconds() / 3600
+    n = o.get("candidats")
+    return heures <= 48 and (n is None or n < 50)
+
+
 def veille(moment: str, essai: bool = False, deps: Dependances | None = None, cfg: dict | None = None, rech: dict | None = None, journal=print) -> dict:
     t0 = datetime.now(timezone.utc)
     cfg = cfg or config.charger()
@@ -228,8 +241,9 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
                     n_brouillons += 1
             else:
                 base.marquer(o["cle"], note=note)
-            if docs:                            # pour le mail récapitulatif : adéquation CV / offre et premier atout
+            if docs:                            # pour le mail récapitulatif : adéquation CV / offre, premier atout, urgence
                 o["ats"], o["atout"] = docs.get("ats", ""), (docs.get("forts") or [""])[0][:110]
+                o["urgent"] = urgente(o)
             v.a_postuler_ajouter([v.ligne_a_postuler(o, docs, onglet)])
             de_cette_veille.append((o, docs))
             top.append(o)
@@ -256,7 +270,7 @@ def _veille(moment, deps, cfg, rech, journal, t0) -> dict:
     sauver()
 
     # 5) récap, à soi seul
-    resume = dict(moment=moment, nouvelles=len(nouv), gardees=len(gardees), documents=n_docs, brouillons=n_brouillons, relances=suivi["relances"], top=top[:10],
+    resume = dict(moment=moment, nouvelles=len(nouv), gardees=len(gardees), documents=n_docs, brouillons=n_brouillons, relances=suivi["relances"], top=top[:40],
                   erreurs=[f"{x.source} : {x.erreur[:120]}" for x in sante if x.erreur] + list(ctx.budget.get("notes_sources", []))[:10]
                   + ([f"Production : {len(erreurs_offres)} offre(s) en erreur ({', '.join(sorted(set(erreurs_offres)))}), retentées à la prochaine veille"]
                      if erreurs_offres else []) + ([f"Suivi Gmail : {suivi['erreurs']} fil(s) illisible(s)"] if suivi.get("erreurs") else []),

@@ -1,6 +1,9 @@
 _mode_emploi: 'Mots-clés de la veille. Ajoute ou retire des intitulés : ils sont repris à la veille suivante.'
 france_achats:
 - acheteur junior
+- acheteur fret
+- acheteur transport junior
+- acheteur achats indirects
 - acheteuse junior
 - acheteur débutant
 - acheteur jeune diplômé
@@ -73,6 +76,11 @@ france_graduate:
 - graduate programme opérations
 europe_titres:
 - junior buyer
+- freight procurement
+- transport buyer
+- logistics buyer
+- procurement coordinator
+- purchasing coordinator
 - buyer
 - purchasing specialist
 - procurement specialist
@@ -101,6 +109,15 @@ europe_titres:
 - procure to pay
 - graduate programme supply chain
 - graduate program procurement
+espagnol_titres:
+- comprador junior
+- comprador
+- técnico de compras
+- analista de compras
+- técnico de aprovisionamiento
+- planificador supply chain
+- técnico supply chain
+- coordinador logístico
 french_speaker:
 - French speaking buyer
 - French speaking procurement

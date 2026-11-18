@@ -46,6 +46,11 @@ def produire(o: dict, m, s, racine_id: str, ia: dict | None, travail: str | None
     cv = G.televerser(s.drive, r["cv_pdf"], dossier_id, "application/pdf")
     lm = G.televerser(s.drive, r["lm_pdf"], dossier_id, "application/pdf")
     G.televerser(s.drive, txt, dossier_id, "text/plain")
+    if hasattr(OA, "texte_entretien"):                  # fiche de préparation d'entretien pour cette offre
+        prep = os.path.join(r["wd"], "Preparation_entretien.txt")
+        with open(prep, "w", encoding="utf8") as f:
+            f.write(OA.texte_entretien(r))
+        G.televerser(s.drive, prep, dossier_id, "text/plain")
     mail, objet = OA.consigne_mail(desc)
     return dict(cv=cv, lm=lm, dossier=G.lien_dossier(s.drive, dossier_id), dossier_id=dossier_id, cv_local=r["cv_pdf"], lm_local=r["lm_pdf"],
                 mail=mail, objet=objet, poste=poste, ent=r["ent"], note=r["note"]["total"], lang=r["spec"]["lang"], alertes=r["a_relire"],

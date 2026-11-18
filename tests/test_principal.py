@@ -253,3 +253,22 @@ def test_recap_montre_adequation_cv_et_atout():
         dict(note=8.5, categorie="CDI France", url="https://ex.fr/1", title="Acheteur junior", company="Acme", ats="100 %",
              atout="212 k USD de réductions obtenues sur factures contestées")]))
     assert "100 %" in corps and "Adéquation CV" in corps and "212 k USD" in corps
+
+
+def test_recap_offres_a_envoyer_aujourd_hui():
+    from veille import recap
+    _, corps = recap.contenu(dict(moment="matin", top=[
+        dict(note=8, title="Approvisionneur", company="Acme", url="https://ex.fr/a", urgent=True),
+        dict(note=9, title="Acheteur junior", company="Beta", url="https://ex.fr/b", urgent=False)]))
+    assert "À envoyer aujourd'hui" in corps
+    assert corps.index("Approvisionneur") < corps.index("Les 10 meilleures")
+
+
+def test_offre_urgente():
+    from datetime import datetime, timedelta, timezone
+    from veille import principal as PR
+    maintenant = datetime.now(timezone.utc)
+    assert PR.urgente(dict(posted=maintenant - timedelta(hours=10), candidats=12))
+    assert PR.urgente(dict(posted=maintenant - timedelta(hours=30), candidats=None))
+    assert not PR.urgente(dict(posted=maintenant - timedelta(days=5), candidats=3))
+    assert not PR.urgente(dict(posted=maintenant - timedelta(hours=5), candidats=180))
